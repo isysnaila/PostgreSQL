@@ -1,0 +1,109 @@
+﻿Exercício Triggers
+
+
+Aluna: Isys Naila Santos Silva                              RA:16424
+
+
+
+
+a) Criar um gatilho de nome “removeReserva” para, assim que um cliente alugar determinado filme, remover a reserva desse filme que o cliente porventura tenha feito. 
+
+
+CREATE OR REPLACE FUNCTION functiondeletarreserva()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+        DELETE FROM reserva
+        WHERE codCliente=NEW.codCliente AND codCopia=NEW.codCopia;
+        RETURN NEW;
+END;
+$$
+
+
+
+
+CREATE TRIGGER removeReserva 
+        AFTER INSERT ON aluguel
+        FOR EACH ROW
+        EXECUTE FUNCTION functiondeletarreserva();
+
+
+b) Criar um gatilho de nome “mudaAtributo” para, quando uma cópia for alugada, seu atributo "estaAlugada" ser modificado para "sim". 
+        
+CREATE FUNCTION functionmuda_atributo()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+        UPDATE copia
+        SET estaAlugada='sim'
+        WHERE codCopia=NEW.codCopia;
+        RETURN NEW;
+END;
+$$
+
+
+CREATE TRIGGER mudaAtributo
+        AFTER INSERT ON aluguel
+        FOR EACH ROW
+        EXECUTE FUNCTION functionmuda_atributo();
+
+
+c) Considere que cada cliente tenha associado a si um registro de PONTOS obtidos para futuras promoções, computado da seguinte maneira: para cada registro de locação, ele ganha um ponto. Sendo assim, crie um trigger de nome “adicionaLinha” que, para cada novo cliente cadastrado, implica na inserção de uma linha associada a ele na tabela de pontos
+
+
+CREATE FUNCTION functionadd_linha()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+        INSERT INTO pontos
+        (codCliente)
+        VALUES(NEW.codCliente);
+        RETURN NEW;
+END;
+$$
+
+
+CREATE TRIGGER adicionarLinha
+AFTER INSERT ON cliente
+FOR EACH ROW
+EXECUTE FUNCTION functionadd_linha()
+
+
+
+
+
+
+ATIVIDADE AULA 30/09 (REVISÃO PROVA)
+
+
+1-
+CREATE FUNCTION function_add_ponto()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+        UPDATE pontos
+        SET pontos=pontos+1
+        WHERE codCliente=NEW.codCliente;
+        RETURN NEW;
+END;
+$$
+
+
+CREATE TRIGGER add_ponto
+AFTER INSERT ON aluguel
+FOR EACH ROW
+EXECUTE FUNCTION function_add_ponto()
+
+
+TESTE:
+INSERT INTO aluguel
+VALUES
+('00000014','0005','0001',5)
+
+
+2-
+3-
